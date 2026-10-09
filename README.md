@@ -7,14 +7,13 @@ Personalización de terminal para Termux basada en los ASCII originales del mant
 ```bash
 pkg update
 pkg install git python openssh
-git clone https://github.com/TU-USUARIO/adrenalin-team.git
+git clone https://github.com/TheOnlyCake/Adrenalin-Termux.git
 cd adrenalin-team
 bash install.sh
 source ~/.bashrc
 adrenalin --on
 ```
 
-Reemplaza `TU-USUARIO` por tu usuario de GitHub. En la primera activación se pide un nickname personal.
 
 ## Comandos
 
