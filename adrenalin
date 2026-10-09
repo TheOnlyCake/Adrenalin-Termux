@@ -1,0 +1,68 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -eu
+CFG="$HOME/.config/adrenalin-team"
+CONFIG="$CFG/config"
+BASHRC="$HOME/.bashrc"
+START="# >>> ADRENALIN TEAM ACTIVE >>>"
+END="# <<< ADRENALIN TEAM ACTIVE <<<"
+mkdir -p "$CFG"
+
+case "${1:-}" in
+  --on)
+    if [[ ! -s "$CONFIG" ]]; then
+      printf '\033[38;2;0;220;255mAdrenalin Team\033[0m\n'
+      read -r -p "Elige tu nickname: " nick
+      if [[ -z "${nick//[[:space:]]/}" ]]; then
+        echo "El nickname no puede estar vacío."; exit 1
+      fi
+      printf 'ADRENALIN_NICK=%q\n' "$nick" > "$CONFIG"
+      chmod 600 "$CONFIG"
+    fi
+    if ! grep -qF "$START" "$BASHRC" 2>/dev/null; then
+      cat >> "$BASHRC" <<'BASHRC'
+
+# >>> ADRENALIN TEAM ACTIVE >>>
+if [[ $- == *i* && -f "$HOME/.config/adrenalin-team/enabled" ]]; then
+  source "$HOME/.local/share/adrenalin-team/adrenalin-prompt.sh"
+  source "$HOME/.local/share/adrenalin-team/shell-commands.sh"
+  bash "$HOME/.local/share/adrenalin-team/banner.sh"
+fi
+# <<< ADRENALIN TEAM ACTIVE <<<
+BASHRC
+    fi
+    touch "$CFG/enabled"
+    echo "Adrenalin Team activado. Ejecuta: source ~/.bashrc"
+    echo "By: Adrenalin Team"
+    ;;
+  --off)
+    rm -f "$CFG/enabled"
+    if [[ -f "$CFG/bashrc.pre-install" ]]; then
+      cp "$CFG/bashrc.pre-install" "$BASHRC"
+      if ! grep -qF '# >>> ADRENALIN TEAM PATH >>>' "$BASHRC"; then
+        printf '\n# >>> ADRENALIN TEAM PATH >>>\nexport PATH="$HOME/.local/bin:$PATH"\n# <<< ADRENALIN TEAM PATH <<<\n' >> "$BASHRC"
+      fi
+    else
+      tmp="$(mktemp)"
+      awk -v start="$START" -v end="$END" '
+        $0==start {skip=1; next}
+        $0==end {skip=0; next}
+        !skip {print}
+      ' "$BASHRC" > "$tmp"
+      cat "$tmp" > "$BASHRC"; rm -f "$tmp"
+    fi
+    echo "Adrenalin Team desactivado. Ejecuta: source ~/.bashrc"
+    echo "By: Adrenalin Team"
+    ;;
+  --status)
+    [[ -f "$CFG/enabled" ]] && echo "Estado: activado" || echo "Estado: desactivado"
+    if [[ -f "$CONFIG" ]]; then
+      source "$CONFIG"
+      printf 'Nickname: %s\n' "${ADRENALIN_NICK:-sin configurar}"
+    fi
+    echo "By: Adrenalin Team"
+    ;;
+  *)
+    echo "Adrenalin Team — By: Adrenalin Team"
+    echo "Uso: adrenalin --on | --off | --status"
+    ;;
+esac

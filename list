@@ -1,0 +1,80 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+if [[ "$1" == "cmds" && "$2" == "-c" ]]; then
+    command clear
+
+    # ASCII: degradado blanco -> rojo -> azul -> verde
+    /data/data/com.termux/files/usr/bin/python - <<'PY'
+import os
+
+art = r"""
+  ______  __    __       _______.___________.  ______   .___  ___. 
+ /      ||  |  |  |     /       |           | /  __  \  |   \/   | 
+|  ,----'|  |  |  |    |   (----`---|  |----`|  |  |  | |  \  /  | 
+|  |     |  |  |  |     \   \       |  |  |  |  |  |  | |  |\/|  | 
+|  `----.|  `--'  | .----)   |      |  |  |  `--'  | |  |  |  | 
+ \______| \______/  |_______/       |__|      \______/  |__|  |__| 
+                                                                   
+  ______ .___  ___.  _______       _______.
+ /      ||   \/   | |       \     /       |
+|  ,----'|  \  /  | |  .--.  |   |   (----`
+|  |     |  |\/|  | |  |  |  |    \   \    
+|  `----.|  |  |  | |  '--'  |.----)   |   
+ \______||__|  |__| |_______/ |_______/    
+                                           
+ __       __       _______.___________.   
+|  |     |  |     /       |           | _ 
+|  |     |  |    |   (----`---|  |----`(_)
+|  |     |  |     \   \       |  |        
+|  `----.|  | .----)   |      |  |      _ 
+|_______||__| |_______/       |__|     (_)
+"""
+
+lines = art.strip("\n").splitlines()
+chars = [c for line in lines for c in line if c != " "]
+n = max(1, len(chars) - 1)
+
+stops = [
+    (255, 255, 255),  # blanco
+    (255,   0,   0),  # rojo
+    (  0,  80, 255),  # azul
+    (  0, 255,  80),  # verde
+]
+
+def color(t):
+    p = t * (len(stops) - 1)
+    idx = min(int(p), len(stops) - 2)
+    f = p - idx
+    a, b = stops[idx], stops[idx + 1]
+    return tuple(round(a[i] + (b[i] - a[i]) * f) for i in range(3))
+
+i = 0
+for line in lines:
+    out = []
+    for ch in line:
+        if ch == " ":
+            out.append(ch)
+        else:
+            r, g, b = color(i / n)
+            out.append(f"\033[38;2;{r};{g};{b}m{ch}\033[0m")
+            i += 1
+    print("".join(out))
+PY
+
+    printf '\n\033[38;2;80;150;255m'
+    printf '%s\n' '  CUSTOM COMMANDS — Adrenalin Team'
+    printf '%s\n' '  -----------------------------------'
+    printf '%s\n' '  adrenalin --on  - Activa la personalización'
+    printf '%s\n' '  adrenalin --off - Desactiva la personalización'
+    printf '%s\n' '  adrenalin --status - Muestra el estado'
+    printf '%s\n' '  clear           - Limpia la terminal y muestra el ASCII'
+    printf '%s\n' '  python          - Banner y ejecuta Python'
+    printf '%s\n' '  ssh info        - Muestra información SSH/SFTP'
+    printf '%s\n' '  ssh init        - Inicia el servidor SSH/SFTP'
+    printf '%s\n' '  list cmds -c    - Abre este centro de comandos'
+    printf '%s\n' '  By: Adrenalin Team'
+    printf '\033[0m\n'
+else
+    printf 'Uso: list cmds -c\n'
+    printf 'By: Adrenalin Team\n'
+fi
